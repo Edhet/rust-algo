@@ -7,10 +7,8 @@ pub fn call(max: i64) -> i64 {
     let mut prime_count: i64 = 0;
 
     for number in 2..max_number{
-        if number % 2 != 0 || number == 2{
-            if is_prime(number) == true {
-                prime_count += 1;
-            }
+        if is_prime(number) == true {
+            prime_count += 1;
         }
     }
 
