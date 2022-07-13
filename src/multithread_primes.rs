@@ -17,33 +17,26 @@ pub fn call() {
     let arg_buffer: i64 = argument[1].trim().parse().expect("Error transforming String to i64");
     let threads: i64 = arg_buffer;
 
-    let mut numbers_vector: Vec<i64> = Vec::new();
-    for number in 2..=total {
-        numbers_vector.push(number);
-    }
-    println!("{:?}", numbers_vector);
-
     let mut processes = vec![];
     let (sech, rech) = mpsc::channel();
 
-    for _i in 1..=threads {
+    let mut start: i64 = 2;
+    let factor: i64 = total/threads;
+    let mut end: i64 = factor;
+
+    for i in 1..=threads {
         let sech_c = sech.clone();
-        let numbers_vector_c = numbers_vector.clone();
-        
-        let mut divided_numbers: Vec<i64> = Vec::new();
-        for entry in numbers_vector_c {
-            if entry % 2 != 0 || entry == 2 {
-                divided_numbers.push(entry);
-            }
+  
+        if i == threads && end != total {
+            end = total;          
         }
-        println!("{:?}", divided_numbers);
-        
-
-
 
         processes.push(thread::spawn(move || {
-            sech_c.send(primes(divided_numbers)).unwrap();
+            sech_c.send(primes(start, end)).unwrap();
         }));
+
+        start = end + 1;
+        end += factor;
     }
 
     for members in processes {
@@ -59,14 +52,14 @@ pub fn call() {
     println!("\nElapsed time: {:.2?}", elapsed_t);
 
     println!("{} numbers where counted\n{} primes where found\nUsing {} threads.", total, result, threads);
-
+    
 }
 
-fn primes(numbers: Vec<i64>) -> i64 {
+fn primes(start: i64, end: i64) -> i64 {
 
     let mut prime_count: i64 = 0;
 
-    for number in numbers {
+    for number in start..=end{
         if is_prime(number) == true {
             prime_count += 1;
         }
