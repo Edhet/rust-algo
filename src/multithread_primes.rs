@@ -5,7 +5,7 @@ use std::env;
 
 extern crate num_cpus;
 
-pub fn call() {
+pub fn call() -> i64 {
 
     let argument: Vec<String> = env::args().collect();
     let elapsed_t = Instant::now();
@@ -52,7 +52,7 @@ pub fn call() {
     println!("\nElapsed time: {:.2?}", elapsed_t);
 
     println!("{} numbers where counted\n{} primes where found\nUsing {} threads.", total, result, threads);
-    
+    return result;
 }
 
 fn primes(start: i64, end: i64) -> i64 {

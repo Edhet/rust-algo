@@ -1,9 +1,13 @@
 use std::time::Instant;
+use std::env;
 
-pub fn call(max: i64) -> i64 {
+pub fn call() -> i64 {
+
+    let argument: Vec<String> = env::args().collect();
+
     let elapsed_t = Instant::now();
-    
-    let max_number: i64 = max;
+
+    let max_number: i64 = argument[1].trim().parse().expect("Error on Str -> i64");
     let mut prime_count: i64 = 0;
 
     for number in 2..max_number{
