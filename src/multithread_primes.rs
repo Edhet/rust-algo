@@ -10,33 +10,45 @@ pub fn call() -> i64 {
     let argument: Vec<String> = env::args().collect();
     let elapsed_t = Instant::now();
 
-    let arg_buffer: i64 = argument[2].trim().parse().expect("Error transforming String to i64");
-    let total: i64 = arg_buffer;
-    let mut result: i64 = 0;
+    let arg_buffer: usize = argument[1].trim().parse().expect("Error transforming String to i64");
+    let threads: usize = arg_buffer;
 
-    let arg_buffer: i64 = argument[1].trim().parse().expect("Error transforming String to i64");
-    let threads: i64 = arg_buffer;
+    let arg_buffer: i64 = argument[2].trim().parse().expect("Error transforming String to i64");
+    let max_number: i64 = arg_buffer;
+    let mut result: i64 = 0;
 
     let mut processes = vec![];
     let (sech, rech) = mpsc::channel();
 
-    let mut start: i64 = 2;
-    let factor: i64 = total/threads;
-    let mut end: i64 = factor;
+    let start: i64 = 2;
+    let mut list  = vec![];
 
-    for i in 1..=threads {
-        let sech_c = sech.clone();
-  
-        if i == threads && end != total {
-            end = total;          
+    for _thread in 1..=threads {
+        let buffer_vec = vec![];
+        list.push(buffer_vec);
+    }
+
+    let mut thread_index = 0;
+    for value in start..=max_number {
+        if value % 2 != 0 {
+            list[thread_index].push(value);
+
+            thread_index += 1;
+            if thread_index == threads {
+                thread_index = 0;
+            }
         }
+    } 
+    list[0].push(2);
+
+    for i in 0..=threads - 1 {
+        let sech_c = sech.clone();
+        let buffer_list = list[i].clone();
 
         processes.push(thread::spawn(move || {
-            sech_c.send(primes(start, end)).unwrap();
+            sech_c.send(primes(buffer_list)).unwrap();
         }));
 
-        start = end + 1;
-        end += factor;
     }
 
     for members in processes {
@@ -51,15 +63,15 @@ pub fn call() -> i64 {
     let elapsed_t = elapsed_t.elapsed();
     println!("\nElapsed time: {:.2?}", elapsed_t);
 
-    println!("{} numbers where counted\n{} primes where found\nUsing {} threads.", total, result, threads);
+    println!("{} numbers where counted\n{} primes where found\nUsing {} threads.", max_number, result, threads);
     return result;
 }
 
-fn primes(start: i64, end: i64) -> i64 {
+fn primes(list: Vec<i64>) -> i64 {
 
     let mut prime_count: i64 = 0;
 
-    for number in start..=end{
+    for number in list{
         if is_prime(number) == true {
             prime_count += 1;
         }
