@@ -20,7 +20,7 @@ pub fn call() -> i64 {
     let mut processes = vec![];
     let (sech, rech) = mpsc::channel();
 
-    let start: i64 = 2;
+    let start: i64 = 3;
     let mut list  = vec![];
 
     for _thread in 1..=threads {
