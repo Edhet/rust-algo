@@ -16,8 +16,6 @@ Then you can just compile it by running cargo on the folder
 
     cargo run -r
 
----
-
 ## fibonacci.rs
 
 Simple fibonacci progression.

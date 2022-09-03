@@ -1,26 +1,50 @@
 use std::{thread, vec};
 use std::time::Instant;
 use std::sync::mpsc;
+use std::io;
 use std::env;
 
 extern crate num_cpus;
 
-pub fn call() -> i64 {
+const START: i64 = 3;
+
+pub fn call() -> io::Result<i64> {
 
     let argument: Vec<String> = env::args().collect();
     let elapsed_t = Instant::now();
 
-    let arg_buffer: usize = argument[1].trim().parse().expect("Error transforming String to i64");
-    let threads: usize = arg_buffer;
+    let threads;
+    let max_number;
 
-    let arg_buffer: i64 = argument[2].trim().parse().expect("Error transforming String to i64");
-    let max_number: i64 = arg_buffer;
-    let mut result: i64 = 0;
+    if argument.len() == 3 {
+        let arg_buffer = argument[1].trim().parse().unwrap_or(num_cpus::get());
+        threads = arg_buffer;
 
-    let mut processes = vec![];
-    let (sech, rech) = mpsc::channel();
+        let arg_buffer = argument[2].trim().parse().unwrap_or(250000);
+        if arg_buffer > 3 {
+        max_number = arg_buffer;
+        }
+        else {
+            max_number = 250000;
+        }
+    }
+    else {
+        println!("Wrong arguments, defaulting to number of Threads in CPU and 250k");
+        threads = num_cpus::get();
+        max_number = 250000;
+    }
 
-    let start: i64 = 3;
+    let divided_lists = divide_numbers(max_number, threads);
+    let result = do_thread_work(divided_lists, threads);
+
+    let elapsed_t = elapsed_t.elapsed();
+    println!("\nElapsed time: {:.2?}", elapsed_t);
+    println!("{max_number} numbers where counted\n{result} primes where found\nUsing {threads} threads.");
+    
+    return Ok(result);
+}
+
+fn divide_numbers(max_number: i64, threads: usize) -> Vec<Vec<i64>> {
     let mut list  = vec![];
 
     for _thread in 1..=threads {
@@ -29,7 +53,7 @@ pub fn call() -> i64 {
     }
 
     let mut thread_index = 0;
-    for value in start..=max_number {
+    for value in START..=max_number {
         if value % 2 != 0 {
             list[thread_index].push(value);
 
@@ -40,6 +64,15 @@ pub fn call() -> i64 {
         }
     } 
     list[0].push(2);
+
+    return list;
+}
+
+fn do_thread_work (list: Vec<Vec<i64>>, threads: usize) -> i64 {
+    let mut result = 0;
+
+    let mut processes = vec![];
+    let (sech, rech) = mpsc::channel();
 
     for i in 0..=threads - 1 {
         let sech_c = sech.clone();
@@ -60,10 +93,6 @@ pub fn call() -> i64 {
         result += received;
     }
 
-    let elapsed_t = elapsed_t.elapsed();
-    println!("\nElapsed time: {:.2?}", elapsed_t);
-
-    println!("{} numbers where counted\n{} primes where found\nUsing {} threads.", max_number, result, threads);
     return result;
 }
 
