@@ -18,18 +18,25 @@ pub fn call() -> io::Result<i64> {
 
     if argument.len() == 3 {
         let arg_buffer = argument[1].trim().parse().unwrap_or(num_cpus::get());
-        threads = arg_buffer;
+        if arg_buffer <= num_cpus::get() * 3 {
+            threads = arg_buffer;
+        }
+        else {
+            println!("Can only spawn 3x the CPUs threads, defaulted to actual number of Threads.");
+            threads = num_cpus::get();
+        }
 
         let arg_buffer = argument[2].trim().parse().unwrap_or(250000);
         if arg_buffer > 3 {
         max_number = arg_buffer;
         }
         else {
+            println!("Cannot count numbers up to below 3, defaulted to 250k.");
             max_number = 250000;
         }
     }
     else {
-        println!("Wrong arguments, defaulting to number of Threads in CPU and 250k");
+        println!("Wrong arguments, defaulting to number of Threads in CPU and 250k.");
         threads = num_cpus::get();
         max_number = 250000;
     }
