@@ -6,39 +6,49 @@ use std::env;
 
 extern crate num_cpus;
 
-const START: i64 = 3;
+const START: u64 = 3;
 
-pub fn call() -> io::Result<i64> {
-
-    let argument: Vec<String> = env::args().collect();
+pub fn call() -> io::Result<i64>{
+    let arguments: Vec<String> = env::args().collect();
     let elapsed_t = Instant::now();
 
     let threads;
     let max_number;
 
-    if argument.len() == 3 {
-        let arg_buffer = argument[1].trim().parse().unwrap_or(num_cpus::get());
-        if arg_buffer <= num_cpus::get() * 3 {
-            threads = arg_buffer;
-        }
-        else {
-            println!("Can only spawn 3x the CPUs threads, defaulted to actual number of Threads.");
-            threads = num_cpus::get();
+    if arguments.len() == 1 {
+        threads = num_cpus::get();
+        max_number = 250000;
+        println!("No argument given, defaulting to {threads} threads up to {max_number}.");
+    }
+    else if arguments.len() == 3 {
+        let thread_arg = arguments[1].trim().parse();
+        match thread_arg {
+            Ok(thread_arg) => {
+                if thread_arg <= num_cpus::get() * 3 {
+                    threads = thread_arg
+                }
+                else {
+                    panic!("Thread spawn limited to three times your CPU threads.")
+                }
+            },
+            Err(_e) => panic!("Thread argument not positive integer.")
         }
 
-        let arg_buffer = argument[2].trim().parse().unwrap_or(250000);
-        if arg_buffer > 3 {
-        max_number = arg_buffer;
-        }
-        else {
-            println!("Cannot count numbers up to below 3, defaulted to 250k.");
-            max_number = 250000;
+        let number_arg = arguments[2].trim().parse();
+        match number_arg {
+            Ok(number_arg) => {
+                if number_arg > 3 {
+                    max_number = number_arg
+                }
+                else {
+                    panic!("Number has to be bigger than 3.")
+                }
+            },
+            Err(_e) => panic!("Number argument not positive integer.")
         }
     }
     else {
-        println!("Wrong arguments, defaulting to number of Threads in CPU and 250k.");
-        threads = num_cpus::get();
-        max_number = 250000;
+        panic!("Wrong number of arguments.");
     }
 
     let divided_lists = divide_numbers(max_number, threads);
@@ -51,7 +61,7 @@ pub fn call() -> io::Result<i64> {
     return Ok(result);
 }
 
-fn divide_numbers(max_number: i64, threads: usize) -> Vec<Vec<i64>> {
+fn divide_numbers(max_number: u64, threads: usize) -> Vec<Vec<u64>> {
     let mut list  = vec![];
 
     for _thread in 1..=threads {
@@ -75,7 +85,7 @@ fn divide_numbers(max_number: i64, threads: usize) -> Vec<Vec<i64>> {
     return list;
 }
 
-fn do_thread_work (list: Vec<Vec<i64>>, threads: usize) -> i64 {
+fn do_thread_work (list: Vec<Vec<u64>>, threads: usize) -> i64 {
     let mut result = 0;
 
     let mut processes = vec![];
@@ -103,7 +113,7 @@ fn do_thread_work (list: Vec<Vec<i64>>, threads: usize) -> i64 {
     return result;
 }
 
-fn primes(list: Vec<i64>) -> i64 {
+fn primes(list: Vec<u64>) -> i64 {
 
     let mut prime_count: i64 = 0;
 
@@ -116,7 +126,7 @@ fn primes(list: Vec<i64>) -> i64 {
     return prime_count;
 }
 
-fn is_prime (value: i64) -> bool {
+fn is_prime (value: u64) -> bool {
     
     for divisors in 2..=value/2 {
         if value % divisors == 0 {
