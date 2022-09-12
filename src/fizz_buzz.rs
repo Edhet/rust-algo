@@ -1,20 +1,22 @@
 pub fn call (max: i64) {
+    let mut punctuation = ",";
 
-    let max_number = max;
-
-    for number in 1..=max_number {
+    for number in 1..=max {
+        if number == max {
+            punctuation = ".";
+        }
         if number % 15 == 0 {
-            print!("Fizz Buzz ");
+            print!(" Fizz Buzz{punctuation}");
         }
         else if number % 5 == 0 {
-            print!("Buzz ");
+            print!(" Buzz{punctuation}");
         }
         else if number % 3 == 0 {
-            print!("Fizz ");
+            print!(" Fizz{punctuation}");
         }
         else {
-            print!("{} ", number);
+            print!(" {number}{punctuation}");
         }
     }
-    println!("");
+    print!("\n");
 }
