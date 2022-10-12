@@ -16,6 +16,18 @@ Then you can just compile it by running cargo on the folder
 
     cargo run -r
 
+## multithreaded_primes.rs
+
+Finds all the prime numbers ranging from 0 to number given by argument input with multithread.
+
+## binsearch.rs
+
+Binary search iteratively
+
+## bubblesort.rs
+
+Recursive Bubble sort algorithm.
+
 ## fibonacci.rs
 
 Simple fibonacci progression.
@@ -27,10 +39,6 @@ Fizz buzz algorithm.
 ## gcd.rs
 
 Algorithms that finds the greatest common divisor between two numbers.
-
-## multithreaded_primes.rs
-
-Finds all the prime numbers ranging from 0 to number given by argument input with multithread.
 
 ## primes.rs
 
