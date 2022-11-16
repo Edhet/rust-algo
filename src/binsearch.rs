@@ -1,5 +1,6 @@
 pub fn search<T: PartialEq + PartialOrd>(list: &Vec<T>, target: T) -> Option<usize> {
-    let (mut low, mut middle, mut high) = (0, 0, list.len());
+    let (mut low, mut high) = (0, list.len());
+    let mut middle;
 
     while low != high {
         middle = (high + low) / 2;
@@ -12,7 +13,6 @@ pub fn search<T: PartialEq + PartialOrd>(list: &Vec<T>, target: T) -> Option<usi
         }
         else {
             high = middle - 1;
-
         }
     }
 
