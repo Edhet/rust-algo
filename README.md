@@ -16,6 +16,10 @@ Then you can just compile it by running cargo on the folder:
 
     cargo run -r
 
+## multithreaded_sieve.rs
+
+A multithreaded implementation of the erathostenes sieve (incredibly slower than the singlethreaded one).
+
 ## multithreaded_primes.rs
 
 Finds all the prime numbers ranging from 0 to number given by argument input with multithread.
