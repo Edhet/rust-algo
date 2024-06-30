@@ -1,8 +1,6 @@
-use core::num;
 use std::{
     env, process,
-    sync::{mpsc::{self, TrySendError}, Arc, Mutex},
-    thread,
+    sync::{mpsc::{self}, Arc, Mutex},
     time::Instant,
 };
 
