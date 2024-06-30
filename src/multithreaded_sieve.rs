@@ -1,11 +1,15 @@
+use core::num;
 use std::{
     env, process,
-    sync::{Arc, Mutex},
+    sync::{mpsc::{self, TrySendError}, Arc, Mutex},
     thread,
     time::Instant,
 };
 
+use threadpool::ThreadPool;
+
 extern crate num_cpus;
+extern crate threadpool;
 
 const AVAILABLE_PARAMETERS: &'static [&'static str] = &["help", "threads", "max"];
 const DEFAULT_MAX_NUMBER: usize = 250_000;
@@ -131,11 +135,12 @@ fn singlethreaded_erathostenes_sieve(max: usize) -> usize {
 
 fn multithreaded_erathostenes_sieve(thread_count: usize, max_count: usize) -> usize {
     let prime_array = Arc::new(Mutex::new(vec![true; max_count]));
+    let pool = ThreadPool::new(thread_count);
+    let (sender, receiver) = mpsc::channel();
 
     let mut p: usize = 2;
     while p.pow(2) <= max_count - 1 {
         if prime_array.lock().unwrap()[p] == true {
-            let mut thread_instances = vec![];
             let mut end = p.pow(2);
 
             let multiples_of_p = (max_count - end) / p;
@@ -150,13 +155,16 @@ fn multithreaded_erathostenes_sieve(thread_count: usize, max_count: usize) -> us
                 }
 
                 let prime_array_copy = prime_array.clone();
-                thread_instances.push(thread::spawn(move || {
+                let sender_copy = sender.clone();
+                pool.execute(move || {
                     mark_prime_multiples(prime_array_copy, p, start, end);
-                }));
+                    let _ = sender_copy.send(1);
+                });
             }
 
-            for th in thread_instances {
-                let _ = th.join();
+            let mut finished_threads = 0;
+            while finished_threads != thread_count {
+                finished_threads += receiver.recv().unwrap();
             }
         }
         p += 1;
