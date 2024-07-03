@@ -160,10 +160,7 @@ fn multithreaded_erathostenes_sieve(thread_count: usize, max_count: usize) -> us
                 });
             }
 
-            let mut finished_threads = 0;
-            while finished_threads != thread_count {
-                finished_threads += receiver.recv().unwrap();
-            }
+            pool.join();
         }
         p += 1;
     }
