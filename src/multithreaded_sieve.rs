@@ -4,10 +4,9 @@ use std::{
     time::Instant,
 };
 
-use threadpool::ThreadPool;
+use crate::threadpool::Threadpool;
 
 extern crate num_cpus;
-extern crate threadpool;
 
 const AVAILABLE_PARAMETERS: &'static [&'static str] = &["help", "threads", "max"];
 const DEFAULT_MAX_NUMBER: usize = 250_000;
@@ -133,8 +132,7 @@ fn singlethreaded_erathostenes_sieve(max: usize) -> usize {
 
 fn multithreaded_erathostenes_sieve(thread_count: usize, max_count: usize) -> usize {
     let prime_array = Arc::new(Mutex::new(vec![true; max_count]));
-    let pool = ThreadPool::new(thread_count);
-    let (sender, receiver) = mpsc::channel();
+    let pool = Threadpool::new(thread_count as i32);
 
     let mut p: usize = 2;
     while p.pow(2) <= max_count - 1 {
@@ -153,11 +151,10 @@ fn multithreaded_erathostenes_sieve(thread_count: usize, max_count: usize) -> us
                 }
 
                 let prime_array_copy = prime_array.clone();
-                let sender_copy = sender.clone();
-                pool.execute(move || {
-                    mark_prime_multiples(prime_array_copy, p, start, end);
-                    let _ = sender_copy.send(1);
-                });
+
+                pool.execute(Arc::new(move || {
+                    mark_prime_multiples(&prime_array_copy, p, start, end);
+                }));
             }
 
             pool.join();
@@ -174,7 +171,7 @@ fn multithreaded_erathostenes_sieve(thread_count: usize, max_count: usize) -> us
     return prime_counter;
 }
 
-fn mark_prime_multiples(array: Arc<Mutex<Vec<bool>>>, prime: usize, start: usize, end: usize) {
+fn mark_prime_multiples(array: &Arc<Mutex<Vec<bool>>>, prime: usize, start: usize, end: usize) {
     let mut i = start;
     while i <= end {
         array.lock().unwrap()[i] = false;
